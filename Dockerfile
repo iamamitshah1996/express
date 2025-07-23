@@ -2,7 +2,7 @@ FROM node:18
 
 WORKDIR /app
 
-COPY /express/package.json ./
+COPY package.json ./
 
 RUN npm install
 

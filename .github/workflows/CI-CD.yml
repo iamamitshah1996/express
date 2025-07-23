@@ -38,14 +38,19 @@ jobs:
           docker stop staging-app || true
           docker rm staging-app || true
 
-      - name: Deploy new container
+      - name: Deploy new container with host networking
         run: |
-          docker run -d --name staging-app -p 8080:8080 hello-world:latest
+          docker run -d --rm --name staging-app --network host hello-world:latest
 
-      - name: Health check new container
+      - name: Health check new container (with retries)
         run: |
-          sleep 5
-          curl -f http://localhost:8080 || exit 1
+          for i in {1..10}; do
+            echo "⏳ Checking app (attempt $i)..."
+            curl -f http://localhost:8080 && echo "✅ App is healthy!" && exit 0
+            sleep 3
+          done
+          echo "❌ App failed to start."
+          exit 1
 
       - name: Rollback if health check fails
         if: failure()
@@ -53,4 +58,4 @@ jobs:
           echo "❌ Health check failed. Rolling back..."
           docker stop staging-app || true
           docker rm staging-app || true
-          docker run -d --name staging-app -p 8080:8080 hello-world:rollback
+          docker run -d --rm --name staging-app --network host hello-world:rollback

@@ -2,7 +2,7 @@ name: CD Pipeline
 
 on:
   workflow_run:
-    workflows: ["CI Pipeline"] 
+    workflows: ["CI Pipeline"]
     types:
       - completed
 
@@ -12,29 +12,30 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Deploy to EC2
+      - name: Connect to EC2 and deploy
         uses: appleboy/ssh-action@v1.0.0
         with:
           host: ${{ secrets.STAGING_HOST }}
-          username: ${{ secrets.STAGING_USERNAME }}
+          username: ${{ secrets.STAGING_USER }}
           key: ${{ secrets.STAGING_SSH_KEY }}
+          port: 22
           script: |
             echo "🔐 Logging into Docker Hub..."
             echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
-
+            
             echo "📦 Pulling latest image..."
             docker pull ${{ secrets.DOCKER_USERNAME }}/hello-world:latest
 
             echo "💾 Saving current container (for rollback)..."
             docker tag ${{ secrets.DOCKER_USERNAME }}/hello-world:latest backup_hello_world || true
-
+            
             echo "🧹 Cleaning up old container..."
             docker stop hello-world || true
             docker rm hello-world || true
-
+            
             echo "🚀 Starting new container..."
             docker run -d --name hello-world -p 8080:8080 ${{ secrets.DOCKER_USERNAME }}/hello-world:latest
-
+            
             echo "✅ Verifying container health..."
             sleep 5
             if ! docker ps | grep hello-world; then

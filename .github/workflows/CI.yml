@@ -1,0 +1,38 @@
+name: CI Pipeline
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Run dummy tests
+        run: |
+          echo "Running dummy test..."
+          echo "✔ Dummy test passed!"
+
+      - name: Build Docker image
+        run: |
+          docker build -t Hello-world .
+
+      # Optional: Run the Docker container to verify it works
+      - name: Run container and check health
+        run: |
+          docker run -d -p 8080:8080 --name test-app Hello-world
+          sleep 5
+          docker ps | grep test-app

@@ -26,11 +26,19 @@ jobs:
           echo "Running dummy test..."
           echo "✔ Dummy test passed!"
 
+      - name: Get short commit SHA
+        id: vars
+        run: echo "SHORT_SHA=${GITHUB_SHA::7}" >> $GITHUB_ENV
+
       - name: Build Docker image
         run: |
-          docker build -t hello-world .
+          docker build -t ${{ secrets.DOCKER_USERNAME }}/hello-world:${{ env.SHORT_SHA }} .
+          docker tag ${{ secrets.DOCKER_USERNAME }}/hello-world:${{ env.SHORT_SHA }} ${{ secrets.DOCKER_USERNAME }}/hello-world:latest
 
-      # Optional: Run the Docker container to verify it works
-      - name: Run container and check health
+      - name: Log in to Docker Hub
+        run: echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
+
+      - name: Push Docker image to Docker Hub
         run: |
-          docker run -d -p 8080:8080 hello-world
+          docker push ${{ secrets.DOCKER_USERNAME }}/hello-world:${{ env.SHORT_SHA }}
+          docker push ${{ secrets.DOCKER_USERNAME }}/hello-world:latest

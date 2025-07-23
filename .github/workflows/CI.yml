@@ -28,11 +28,11 @@ jobs:
 
       - name: Build Docker image
         run: |
-          docker build -t Hello-world .
+          docker build -t hello-world .
 
       # Optional: Run the Docker container to verify it works
       - name: Run container and check health
         run: |
-          docker run -d -p 8080:8080 --name test-app Hello-world
+          docker run -d -p 8080:8080 hello-world
           sleep 5
           docker ps | grep test-app

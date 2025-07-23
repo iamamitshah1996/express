@@ -1,0 +1,56 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  build-test-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Run dummy test
+        run: |
+          echo "✅ Dummy test passed!"
+
+      - name: Build Docker image
+        run: |
+          docker build -t hello-world:latest .
+
+      - name: Save current image (for rollback)
+        run: |
+          docker tag hello-world:latest hello-world:rollback || true
+
+      - name: Stop previous container (if running)
+        run: |
+          docker stop staging-app || true
+          docker rm staging-app || true
+
+      - name: Deploy new container
+        run: |
+          docker run -d --name staging-app -p 8080:8080 hello-aworld:latest
+
+      - name: Health check new container
+        run: |
+          sleep 5
+          curl -f http://localhost:8080 || exit 1
+
+      - name: Rollback if health check fails
+        if: failure()
+        run: |
+          echo "❌ Health check failed. Rolling back..."
+          docker stop staging-app || true
+          docker rm staging-app || true
+          docker run -d --name staging-app -p 8080:8080 hello-world:rollback

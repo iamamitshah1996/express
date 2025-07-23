@@ -15,7 +15,7 @@ jobs:
       - name: Setup SSH Key
         run: |
           echo "${{ secrets.STAGING_SSH_KEY }}" > docker-server.pem
-          chmod 600 key.pem
+          chmod 600 docker-server.pem
 
       - name: Deploy Docker Image to EC2
         run: |

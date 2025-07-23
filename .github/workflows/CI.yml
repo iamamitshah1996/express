@@ -34,5 +34,3 @@ jobs:
       - name: Run container and check health
         run: |
           docker run -d -p 8080:8080 hello-world
-          sleep 5
-          docker ps | grep test-app

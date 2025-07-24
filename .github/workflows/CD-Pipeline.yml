@@ -37,7 +37,7 @@ jobs:
             docker tag ${{ secrets.DOCKER_USERNAME }}/hello-world:latest hello-world:rollback || true
 
             echo "🚀 Running new container..."
-            docker run -d --name staging-app -p 8080:8080 ${{ secrets.DOCKER_USERNAME }}/hello-world:latest
+            docker run -d -p 8080:8080 ${{ secrets.DOCKER_USERNAME }}/hello-world:latest
 
             echo "🩺 Performing health check..."
             sleep 5

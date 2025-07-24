@@ -25,9 +25,13 @@ jobs:
             echo "📦 Pulling latest Docker image..."
             docker pull ${{ secrets.DOCKER_USERNAME }}/hello-world:latest
 
-            echo "🧹 Cleaning up old container (if exists)..."
-            docker stop staging-app || true
-            docker rm staging-app || true
+            echo "🔎 Checking for existing container on port 8080..."
+            EXISTING_CONTAINER=$(docker ps -q --filter "publish=8080")
+            if [ ! -z "$EXISTING_CONTAINER" ]; then
+              echo "🛑 Stopping and removing container running on port 8080..."
+              docker stop $EXISTING_CONTAINER
+              docker rm $EXISTING_CONTAINER
+            fi
 
             echo "💾 Tagging rollback image..."
             docker tag ${{ secrets.DOCKER_USERNAME }}/hello-world:latest hello-world:rollback || true

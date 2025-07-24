@@ -10,5 +10,5 @@ COPY . .
 
 EXPOSE 8080
 
-CMD ["node", "express/examples/hello-world/index.js"]
+CMD ["node", "examples/hello-world/index.js"]
 
